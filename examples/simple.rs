@@ -54,24 +54,27 @@ fn main() {
 
     let settings = LocalSettings { threads: 4, test_set: None, output_directory: "checkpoints", batch_queue_size: 64 };
 
-    // loading from a SF binpack
-    let _data_loader = {
-        let file_path = "data/test80-2024-02-feb-2tb7p.min-v2.v6.binpack";
-        let buffer_size_mb = 1024;
-        let threads = 4;
-        fn filter(entry: &TrainingDataEntry) -> bool {
-            entry.ply >= 16
-                && !entry.pos.is_checked(entry.pos.side_to_move())
-                && entry.score.unsigned_abs() <= 10000
-                && entry.mv.mtype() == MoveType::Normal
-                && entry.pos.piece_at(entry.mv.to()).piece_type() == PieceType::None
-        }
+    // // loading from a SF binpack
+    // let _data_loader = {
+    //     let file_path = "data/test80-2024-02-feb-2tb7p.min-v2.v6.binpack";
+    //     let buffer_size_mb = 1024;
+    //     let threads = 4;
+    //     fn filter(entry: &TrainingDataEntry) -> bool {
+    //         entry.ply >= 16
+    //             && !entry.pos.is_checked(entry.pos.side_to_move())
+    //             && entry.score.unsigned_abs() <= 10000
+    //             && entry.mv.mtype() == MoveType::Normal
+    //             && entry.pos.piece_at(entry.mv.to()).piece_type() == PieceType::None
+    //     }
+    //
+    //     loader::SfBinpackLoader::new(file_path, buffer_size_mb, threads, filter)
+    // };
+    //
+    // // loading directly from a `BulletFormat` file
+    // let data_loader = loader::DirectSequentialDataLoader::new(&["data/baseline.data"]);
 
-        loader::SfBinpackLoader::new(file_path, buffer_size_mb, threads, filter)
-    };
-
-    // loading directly from a `BulletFormat` file
-    let data_loader = loader::DirectSequentialDataLoader::new(&["data/baseline.data"]);
+    let data_loader =
+        loader::ViriBinpackLoader::new("datagen.viri", 1024 * 8, 4, viriformat::dataformat::Filter::default());
 
     trainer.run(&schedule, &settings, &data_loader);
 }
